@@ -1,5 +1,7 @@
 package smallcheck
 
+import scala.io.StdIn.readLine
+
 /**
  * Methods to invoke SmallCheck
  */
@@ -7,22 +9,22 @@ object Drivers {
   import Property.{TestCase, Pass, Fail, Inappropriate}
 
   /** Run SmallCheck on a property from depth 0 to a given depth d */
-  def smallCheck(d: Int, p: Property)   = iterCheck(0, Some(d), p)
+  def smallCheck(d: Int, p: Property): Unit = iterCheck(0, Some(d), p)
 
   /** Run SmallCheck on collection of properties from depth 0 to a given depth d */
-  def smallCheck(d: Int, p: Properties) = iterCheck(0, Some(d), p)
+  def smallCheck(d: Int, p: Properties): Unit = iterCheck(0, Some(d), p)
 
   /** Run SmallCheck on a property at a given depth d */
-  def depthCheck(d: Int, p: Property)   = iterCheck(d, Some(d), p)
+  def depthCheck(d: Int, p: Property): Unit = iterCheck(d, Some(d), p)
 
   /** Run SmallCheck on collection of properties at a given depth d */
-  def depthCheck(d: Int, p: Properties) = iterCheck(d, Some(d), p)
+  def depthCheck(d: Int, p: Properties): Unit = iterCheck(d, Some(d), p)
 
   /** Run SmallCheck on a property interactively */
-  def smallCheckI(p: Property)   = iterCheck(0, None, p)
+  def smallCheckI(p: Property): Unit = iterCheck(0, None, p)
 
   /** Run SmallCheck on collection of properties */
-  def smallCheckI(p: Properties) = iterCheck(0, None, p)
+  def smallCheckI(p: Properties): Unit = iterCheck(0, None, p)
 
   private def iterCheck(dFrom: Int, dToOption: Option[Int], ps: Properties) {
     def iter(d: Int) {
@@ -83,6 +85,6 @@ object Drivers {
   private def whenUserWishes(wish: String): Boolean = {
     print(wish+"? ")
     val reply = readLine()
-    reply.isEmpty() || reply == "y"
+    reply.isEmpty || reply == "y"
   }
 }

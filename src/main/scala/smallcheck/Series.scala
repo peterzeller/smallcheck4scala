@@ -6,7 +6,7 @@ package smallcheck
 sealed abstract class Series[A] extends Function1[Int, Seq[A]] {
 
   /** make the sum (union) of this series with that series */
-  def ++(that: => Series[A]) = new Series[A] {
+  def ++(that: => Series[A]): Series[A] = new Series[A] {
     def apply(d: Int): Seq[A] = Series.this.apply(d) ++ that.apply(d)
   }
 
@@ -15,30 +15,30 @@ sealed abstract class Series[A] extends Function1[Int, Seq[A]] {
     for (a <- Series.this; b <- that) yield (a, b)
 
   /** deepen this series with the transformation f */
-  def deepen(f: (Int) => Int) = new Series[A] {
+  def deepen(f: Int => Int): Series[A] = new Series[A] {
     def apply(d: Int): Seq[A] = Series.this.apply(f(d))
   }
 
   /** map the output of this series */
-  def map[B](f: (A) => B) = new Series[B] {
+  def map[B](f: A => B): Series[B] = new Series[B] {
     def apply(d: Int): Seq[B] =
       Series.this.apply(d).map(f)
   }
 
   /** flatMap the output of this series */
-  def flatMap[B](f: (A) => Series[B]) = new Series[B] {
+  def flatMap[B](f: A => Series[B]): Series[B] = new Series[B] {
     def apply(d: Int): Seq[B] =
       Series.this.apply(d).flatMap(f(_).apply(d))
   }
 
   /** Filter (lazily) the output of this series */
-  def withFilter(p: (A) => Boolean) = new WithFilter(p)
+  def withFilter(p: A => Boolean) = new WithFilter(p)
 
-  class WithFilter(p: (A) => Boolean) {
+  class WithFilter(p: A => Boolean) {
     import scala.collection.mutable.ListBuffer
 
     /** map over filter */
-    def map[B](f: (A) => B) = new Series[B] {
+    def map[B](f: A => B): Series[B] = new Series[B] {
       def apply(d: Int): Seq[B] = {
         val buffer = new ListBuffer[B]
         for (tc <- Series.this.apply(d))
@@ -48,7 +48,7 @@ sealed abstract class Series[A] extends Function1[Int, Seq[A]] {
     }
 
     /** flatMap over filter */
-    def flatMap[B](f: (A) => Series[B]) = new Series[B] {
+    def flatMap[B](f: A => Series[B]): Series[B] = new Series[B] {
       def apply(d: Int): Seq[B] = {
         val buffer = new ListBuffer[B]
         for (tc <- Series.this.apply(d))
@@ -65,27 +65,27 @@ sealed abstract class Series[A] extends Function1[Int, Seq[A]] {
 object Series {
 
   /** The wrap a series function as a Series object */
-  def apply[A](f: (Int) => Seq[A]) = new Series[A] {
+  def apply[A](f: Int => Seq[A]): Series[A] = new Series[A] {
     def apply(d: Int): Seq[A] = f.apply(d)
   }
 
   /** The constant series for a sequence of values */
-  def constant[A](s: Seq[A]) = new Series[A] {
+  def constant[A](s: Seq[A]): Series[A] = new Series[A] {
     def apply(d: Int): Seq[A] = s
   }
 
   /** The series for a single value (nullary function) */
-  def cons0[A](a: A) = new Series[A] {
+  def cons0[A](a: A): Series[A] = new Series[A] {
     def apply(d:Int): Seq[A] = Seq(a)
   }
 
   /** The series for a unary function */
-  def cons1[A,B](f: (A) => B)(implicit sa: Series[A]) = new Series[B] {
+  def cons1[A,B](f: A => B)(implicit sa: Series[A]): Series[B] = new Series[B] {
     def apply(d: Int): Seq[B] = if (d>0) for (a <- sa(d-1)) yield f(a) else Nil
   }
 
   /** The series for a binary function */
-  def cons2[A,B,C](f: (A,B) => C)(implicit sa: Series[A], sb: Series[B]) =
+  def cons2[A,B,C](f: (A,B) => C)(implicit sa: Series[A], sb: Series[B]): Series[C] =
     new Series[C] {
       def apply(d: Int): Seq[C] =
         if (d>0) {
@@ -100,7 +100,7 @@ object Series {
 
   /** The series for a ternary function */
   def cons3[A,B,C,D](f: (A,B,C) => D)
-                    (implicit sa: Series[A], sb: Series[B], sc: Series[C]) =
+                    (implicit sa: Series[A], sb: Series[B], sc: Series[C]): Series[D] =
     new Series[D] {
       def apply(d: Int): Seq[D] =
         if (d > 0) {
@@ -118,17 +118,17 @@ object Series {
   def double[A](implicit s: Series[A]): Series[(A, A)] = s ** s
 
   /** The series of Unit */
-  implicit lazy val seriesUnit = new Series[Unit] {
+  implicit lazy val seriesUnit: Series[Unit] = new Series[Unit] {
     def apply(d: Int): Seq[Unit] = Seq(())
   }
 
   /** The series of Boolean */
-  implicit lazy val seriesBool = new Series[Boolean] {
+  implicit lazy val seriesBool: Series[Boolean] = new Series[Boolean] {
     def apply(d: Int): Seq[Boolean] = Seq(true, false)
   }
 
   /** The series of Int */
-  implicit lazy val seriesInt = new Series[Int] {
+  implicit lazy val seriesInt: Series[Int] = new Series[Int] {
     def apply(d: Int): Seq[Int] = for (i <- -d to d) yield i
   }
 
@@ -136,7 +136,7 @@ object Series {
   implicit lazy val seriesLong: Series[Long] = seriesInt.map(_.toLong)
 
   /** The series of Byte */
-  implicit lazy val seriesByte = new Series[Byte] {
+  implicit lazy val seriesByte: Series[Byte] = new Series[Byte] {
     def apply(d: Int): Seq[Byte] = {
       val d2 = scala.math.min(d, Byte.MaxValue)
       for (i <- -d2 to d2) yield i.toByte
@@ -144,7 +144,7 @@ object Series {
   }
 
   /** The series of Short */
-  implicit lazy val seresShort = new Series[Short] {
+  implicit lazy val seresShort: Series[Short] = new Series[Short] {
     def apply(d: Int): Seq[Short] = {
       val d2 = scala.math.min(d, Short.MaxValue)
       for (i <- -d2 to d2) yield i.toShort
@@ -163,7 +163,7 @@ object Series {
   implicit lazy val seriesFloat: Series[Float] = seriesDouble.map(_.toFloat)
 
   /** The series of Char */
-  implicit lazy val serialChar = new Series[Char] {
+  implicit lazy val serialChar: Series[Char] = new Series[Char] {
     def apply(d: Int): Seq[Char] = ('a' to 'z') take (d+1)
   }
 
@@ -180,9 +180,9 @@ object Series {
   implicit def seriesList[A](implicit s: Series[A]): Series[List[A]] =
     cons0(List.empty[A]) ++ cons2((h:A, t:List[A]) => h :: t)
 
-  /** The series of Stream[A] for series of A */
-  implicit def seriesStream[A](implicit s: Series[A]): Series[Stream[A]] =
-    cons0(Stream.empty[A]) ++ cons2(Stream.cons(_:A,_: Stream[A]))
+  /** The series of LazyList[A] for series of A */
+  implicit def seriesStream[A](implicit s: Series[A]): Series[LazyList[A]] =
+    cons0(LazyList.empty[A]) ++ cons2(LazyList.cons(_:A,_: LazyList[A]))
 
   /** The series of String */
   implicit def seriesString(implicit s: Series[List[Char]]): Series[String] =
@@ -191,7 +191,7 @@ object Series {
   /** The series of tuples */
   implicit def seriesTuple2[A,B](implicit
     sa: Series[A], sb: Series[B]
-  ) = sa ** sb
+  ): Series[(A, B)] = sa ** sb
 
   /** The series of triples */
   implicit def seriesTuple3[A,B,C](implicit

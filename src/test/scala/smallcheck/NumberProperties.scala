@@ -7,12 +7,12 @@ object NumberProperties extends Properties("Number properties") {
   import Property._
   import Series.{seriesList}
 
-  val primes: Stream[Int] = {
-    def sieve(s: Stream[Int]): Stream[Int] = s match {
+  val primes: LazyList[Int] = {
+    def sieve(s: LazyList[Int]): LazyList[Int] = s match {
       case p #:: t =>
         p #:: sieve(for (x <- t if p*p > x || x % p > 0) yield x)
     }
-    sieve(Stream.from(2))
+    sieve(LazyList.from(2))
   }
   
   val seriesNat = Series { (d: Int) =>

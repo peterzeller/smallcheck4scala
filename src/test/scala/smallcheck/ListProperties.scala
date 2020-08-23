@@ -7,7 +7,7 @@ object ListProperties extends Properties("List properties") {
   import Property._
   
   property("rev-rev") =
-    forAll { (xs: Stream[Int]) =>
+    forAll { (xs: LazyList[Int]) =>
       xs == xs.reverse.reverse
     }
   
@@ -16,7 +16,7 @@ object ListProperties extends Properties("List properties") {
     case (_, Nil) => false
     case (x::xs, y::ys) => x == y || isPrefix(xs, ys)
   }
-  
+
   property("prefix-complete") =
     forAll { (xs: List[Int], ys: List[Int]) =>
       isPrefix(xs, xs ++ ys)
@@ -38,8 +38,8 @@ object ListProperties extends Properties("List properties") {
     }
   
   property("union-2") =
-    forAll { (xs: Stream[Boolean], ys: Stream[Boolean]) =>
-      existsDeeperBy(_*2) { (zs: Stream[Boolean]) =>
+    forAll { (xs: LazyList[Boolean], ys: LazyList[Boolean]) =>
+      existsDeeperBy(_*2) { (zs: LazyList[Boolean]) =>
         forAll { (b: Boolean) =>
           zs.contains(b) == (xs.contains(b) || ys.contains(b))
         }
@@ -47,6 +47,6 @@ object ListProperties extends Properties("List properties") {
     }
   
   def main(args: Array[String]): Unit = {
-    Drivers.smallCheckI(ListProperties)
+    Drivers.smallCheck(10, ListProperties)
   }
 }
