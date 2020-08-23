@@ -129,7 +129,7 @@ object Series {
 
   /** The series of Int */
   implicit lazy val seriesInt: Series[Int] = new Series[Int] {
-    def apply(d: Int): Seq[Int] = for (i <- -d to d) yield i
+    def apply(d: Int): Seq[Int] = Seq(0) ++ (1 to d).flatMap(i => Seq(i, -i))
   }
 
   /** The series of Long */
