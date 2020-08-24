@@ -1,6 +1,5 @@
 package smallcheck
 
-import com.sun.tools.javac.jvm.Gen
 import shapeless._
 import ops.function._
 import shapeless.ops.hlist.Tupler
